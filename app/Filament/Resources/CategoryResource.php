@@ -50,7 +50,8 @@ class CategoryResource extends Resource
                         ->label("Resumen"),
                     
                 TextColumn::make('created_at')
-                    ->label("Fecha de creación"),
+                    ->label("Fecha de creación")
+                    ->date(),
             ])
             ->filters([
             
