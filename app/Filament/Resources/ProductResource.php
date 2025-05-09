@@ -3,9 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
-use App\Filament\Resources\ProductResource\RelationManagers;
+use App\Filament\Resources\CategoryResource;
 use App\Models\Product;
-use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Section;
@@ -19,8 +18,6 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ProductResource extends Resource
 {
@@ -28,6 +25,10 @@ class ProductResource extends Resource
 
     protected static ?string $navigationLabel = 'Productos';
     protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
+    
+    protected static ?string $slug = "productos";
+    protected static ?string $label = "Producto";
+    protected static ?string $pluralLabel = "Productos";
 
     public static function form(Form $form): Form
     {
@@ -44,8 +45,14 @@ class ProductResource extends Resource
                             ->label('Codigo')
                             ->required()
                             ->maxLength(20)
-                            ->unique()
-                            ->placeholder('Ej: FIC-001'),
+                            ->unique(table: 'products', column: 'code', ignorable: fn($record) => $record)
+                            ->placeholder('Ej: FIC-001')
+                            ->rules(
+                                ['unique:products,code']
+                            )
+                            ->validationMessages([
+                                'unique' => 'El código ya existe, por favor ingrese otro.'
+                            ]),
 
                         TextInput::make('name')
                             ->label('Nombre')
@@ -69,7 +76,10 @@ class ProductResource extends Resource
                             ->relationship('category', 'name')
                             ->searchable()
                             ->preload()
-                            ->required(),
+                            ->required()
+                            ->createOptionForm(
+                                CategoryResource::getFormSchema(),
+                            ),
                     ]),
                 Section::make('Imagen del producto')
                     ->schema([

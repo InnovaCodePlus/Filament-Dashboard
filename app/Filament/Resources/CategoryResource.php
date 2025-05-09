@@ -23,39 +23,41 @@ class CategoryResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                TextInput::make('name')
-                    ->label('Nombre')
-                    ->required()
-                    ->placeholder("Ej: Auriculares"),
+        return $form->schema(static::getFormSchema());
+    }
 
-                TextInput::make('summary')
-                    ->label('Resumen')
-                    ->required()
-                    ->placeholder("Agrega un resumen de la categoria"),
-            ]);
+    public static function getFormSchema(): array
+    {
+        return [
+            TextInput::make('name')
+                ->label('Nombre')
+                ->required()
+                ->placeholder("Ej: Auriculares"),
+
+            TextInput::make('summary')
+                ->label('Resumen')
+                ->required()
+                ->placeholder("Agrega un resumen de la categoria"),
+        ];
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                
+
                 TextColumn::make('id')
                     ->label("ID"),
                 TextColumn::make('name')
                     ->label("Nombre"),
                 TextColumn::make('summary')
-                        ->label("Resumen"),
-                    
+                    ->label("Resumen"),
+
                 TextColumn::make('created_at')
                     ->label("Fecha de creación")
                     ->date(),
             ])
-            ->filters([
-            
-            ])
+            ->filters([])
             ->actions([
                 Tables\Actions\EditAction::make(),
             ])
