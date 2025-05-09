@@ -22,7 +22,8 @@ use Filament\Tables\Table;
 class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
-
+    
+    protected static ?string $navigationGroup = 'Menu principal';
     protected static ?string $navigationLabel = 'Productos';
     protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
     
