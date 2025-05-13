@@ -14,6 +14,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -121,7 +122,8 @@ class ProductResource extends Resource
                     ->searchable(),
 
                 TextColumn::make('summary')
-                    ->label('Resumen'),
+                    ->label('Resumen')
+                    ->toggleable(),
 
                 TextColumn::make('is_active')
                     ->label('Estado')
@@ -130,7 +132,16 @@ class ProductResource extends Resource
                     ->formatStateUsing(fn(bool $state): string  => $state ? 'Activo' : 'Inactivo'),
 
                 TextColumn::make('created_at')
-                    ->label('Fecha de creación'),
+                    ->label('Fecha de creación')
+                    ->sortable()
+                    ->toggleable()
+                    ->dateTime(),
+                
+                TextColumn::make('updated_at')
+                    ->label('Fecha de actualización')
+                    ->sortable()
+                    ->toggleable()
+                    ->dateTime(),
             ])
             ->filters([
                 SelectFilter::make('category_id')
@@ -138,7 +149,9 @@ class ProductResource extends Resource
                     ->relationship('category', 'name')
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                ActionGroup::make([
+                    Tables\Actions\EditAction::make(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
