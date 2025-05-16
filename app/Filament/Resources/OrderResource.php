@@ -76,8 +76,10 @@ class OrderResource extends Resource
                                     ->relationship("product", "name")
                                     ->options(
                                         fn(Get $get): array => Product::query()
-                                            ->whereHas('inventories', fn($q) => $q
-                                                ->where('warehouse_id', $get('../../warehouse_id'))
+                                            ->whereHas(
+                                                'inventories',
+                                                fn($q) => $q
+                                                    ->where('warehouse_id', $get('../../warehouse_id'))
                                             )
                                             ->pluck("name", 'id')
                                             ->toArray()
@@ -90,7 +92,7 @@ class OrderResource extends Resource
                                     ->minValue(1)
                                     ->required()
                                     ->reactive()
-                                    ->rule(function(Get $get){
+                                    ->rule(function (Get $get) {
 
                                         $productId = $get('product_id');
                                         $warehouseId = $get('../../warehouse_id');
@@ -100,10 +102,9 @@ class OrderResource extends Resource
                                             ->value('stock') ?? 0;
 
                                         return "max:$stock";
-
                                     })
-                                    ->helperText(function(Get $get){
-                                        
+                                    ->helperText(function (Get $get) {
+
                                         $productId = $get('product_id');
                                         $warehouseId = $get('../../warehouse_id');
 
@@ -116,14 +117,32 @@ class OrderResource extends Resource
 
                                 Placeholder::make('subTotal')
                                     ->label("Sub Total")
-                                    ->content(function(Get $get){
+                                    ->content(function (Get $get) {
 
                                         $productId = $get('product_id');
-                                        
-                                        $subTotal = $get('quantity') * (Product::find($productId)->price ?? 0  );
+
+                                        $subTotal = $get('quantity') * (Product::find($productId)->price ?? 0);
                                         return number_format($subTotal, 2, ".", "");
                                     })
-                            ]),
+                            ])
+                            ->afterStateUpdated(function ($set, $state){
+                                $total = 0;
+                                
+                                foreach($state as $item){
+                                    $product = Product::find($item['product_id']);
+
+                                    $quantity = $item['quantity'] ?? 0;
+                                    
+                                    $total += $quantity * ($product->price ?? 0);
+                                }
+
+                                $set('total', $total);
+                            })
+                            ->mutateRelationshipDataBeforeCreateUsing(function(array $data): array {
+                                $product = Product::find($data['product_id']);
+                                $data['subTotal'] = $data['quantity'] * $product->price;
+                                return $data;
+                            }),
 
                         Hidden::make('total')
                             ->reactive(),
@@ -131,9 +150,14 @@ class OrderResource extends Resource
                         Placeholder::make("")
                             ->label("Total a pagar")
                             ->columnSpan('full')
+                            ->reactive()
+                            ->content(function (Get $get) {
+                                $total = $get('total');
+                                return number_format($total, 2, ".", "");
+                            })
                     ]),
 
-                
+
             ]);
     }
 
