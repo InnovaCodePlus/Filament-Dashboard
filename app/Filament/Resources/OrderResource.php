@@ -66,6 +66,8 @@ class OrderResource extends Resource
                         Repeater::make("orderProducts")
                             ->relationship()
                             ->columns(3)
+                            ->disabled(fn(Get $get) => !$get('../../warehouse_id') || !$get('../../customer_id'))
+                            ->helperText('Seleccione un almacén y un cliente para cargar productos')
                             ->schema([
 
                                 Select::make('product_id')
